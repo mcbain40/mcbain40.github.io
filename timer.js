@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Cloud, Heart, Filter, ChevronDown, ChevronUp } from 'lucide-react';
+import { Clock, Heart, Filter, ChevronDown, ChevronUp } from 'lucide-react';
 
 const FFXIVTimer = () => {
-  const [currentEorzeanTime, setCurrentEorzeanTime] = useState('12:00 AM');
+  // Initialize all state variables
+  const [currentEorzeanTime, setCurrentEorzeanTime] = useState('00:00');
   const [nextNodes, setNextNodes] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [filterType, setFilterType] = useState('all');
   const [filterExpansion, setFilterExpansion] = useState('all');
   const [expandedNode, setExpandedNode] = useState(null);
 
+  // Updated node data structure
   const nodes = [
-     name: "Ipe Log",
+    botany: [
+      {
+        name: "Ipe Log",
         location: "Kozama'uka (x7, y33)",
         aetheryte: "Earthenshire",
         type: "Botany",
@@ -114,22 +118,26 @@ const FFXIVTimer = () => {
         level: 100,
         patch: "7.0",
         folklore: true
+      }
   ];
 
+  // Function to convert Earth time to Eorzean time
   const getEorzeanTime = () => {
     const EORZEA_MULTIPLIER = 3600 / 175;
     const now = new Date();
     const eorzeaTime = now.getTime() * EORZEA_MULTIPLIER;
-    return new Date(eorzeaTime);
+    const eorzeaDate = new Date(eorzeaTime);
+    return eorzeaDate;
   };
 
+  // Function to format Eorzean time as HH:mm
   const formatEorzeanTime = (date) => {
-    let hours = date.getUTCHours() % 12 || 12;
-    let minutes = date.getUTCMinutes().toString().padStart(2, '0');
-    let period = date.getUTCHours() >= 12 ? 'PM' : 'AM';
-    return `${hours}:${minutes} ${period}`;
+    const hours = date.getUTCHours().toString().padStart(2, '0');
+    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
   };
 
+  // Calculate time until next spawn for a node
   const calculateNextSpawn = (node) => {
     const eorzeaDate = getEorzeanTime();
     const eorzeaHour = eorzeaDate.getUTCHours();
@@ -142,38 +150,94 @@ const FFXIVTimer = () => {
     return hoursUntilSpawn;
   };
 
+  // Toggle favorite status
+  const toggleFavorite = (nodeName) => {
+    const newFavorites = favorites.includes(nodeName)
+      ? favorites.filter(f => f !== nodeName)
+      : [...favorites, nodeName];
+    setFavorites(newFavorites);
+    localStorage.setItem('ffxiv-favorites', JSON.stringify(newFavorites));
+  };
+
+  // Load favorites from localStorage on component mount
+  useEffect(() => {
+    const savedFavorites = localStorage.getItem('ffxiv-favorites');
+    if (savedFavorites) {
+      setFavorites(JSON.parse(savedFavorites));
+    }
+  }, []);
+
+  // Update timer and nodes every second
   useEffect(() => {
     const updateTimer = () => {
       const eorzeaDate = getEorzeanTime();
       setCurrentEorzeanTime(formatEorzeanTime(eorzeaDate));
 
-      let upcoming = nodes.map(node => ({
-        ...node,
-        nextSpawn: calculateNextSpawn(node)
-      }));
+      let upcoming = nodes
+        .filter(node => 
+          (filterType === 'all' || node.type === filterType) &&
+          (filterExpansion === 'all' || node.expansion === filterExpansion)
+        )
+        .map(node => ({
+          ...node,
+          nextSpawn: calculateNextSpawn(node)
+        }));
 
-      upcoming.sort((a, b) => a.nextSpawn - b.nextSpawn);
+      // Sort by favorites first, then spawn time
+      upcoming.sort((a, b) => {
+        const aFav = favorites.includes(a.name);
+        const bFav = favorites.includes(b.name);
+        if (aFav !== bFav) return bFav ? 1 : -1;
+        return a.nextSpawn - b.nextSpawn;
+      });
+
       setNextNodes(upcoming);
     };
 
+    // Update immediately and then every second
     updateTimer();
     const timer = setInterval(updateTimer, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [filterType, filterExpansion, favorites]);
 
   return (
     <div className="card">
-      <h2 className="text-xl font-bold flex items-center gap-2">
-        <Clock className="h-6 w-6" />
-        Eorzean Time: {currentEorzeanTime}
-      </h2>
-      <div className="space-y-4">
-        {nextNodes.map((node, index) => (
-          <div key={index} className="node-item">
-            <h3>{node.name} - Next Spawn in {node.nextSpawn}h</h3>
-          </div>
-        ))}
+      <div className="card-header">
+        <h2 className="flex items-center gap-2 text-xl font-bold">
+          <Clock className="h-6 w-6" />
+          Current Eorzean Time: {currentEorzeanTime}
+        </h2>
+      </div>
+      <div className="card-content">
+        <div className="space-y-4">
+          {nextNodes.map((node, index) => (
+            <div key={index} className={`node-item ${favorites.includes(node.name) ? 'favorite' : ''}`}>
+              <div className="flex items-start justify-between p-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-medium">{node.name}</h3>
+                    <button onClick={() => toggleFavorite(node.name)} className="favorite-heart">
+                      <Heart className="h-5 w-5" fill={favorites.includes(node.name) ? "currentColor" : "none"} />
+                    </button>
+                  </div>
+                  <p className="text-sm text-gray-600">{node.location} (Aetheryte: {node.aetheryte})</p>
+                  <p className="text-sm text-gray-600">Level {node.level} {node.type}</p>
+                  <p className="text-sm text-gray-600">Patch: {node.patch}</p>
+                  {node.folklore && <p className="text-sm text-gray-600 font-semibold">Folklore Node</p>}
+                  <div className="mt-2">
+                    <span className="timer-badge">
+                      Next spawn in: {Math.floor(node.nextSpawn)}h {Math.floor((node.nextSpawn % 1) * 60)}m
+                    </span>
+                  </div>
+                </div>
+                <button onClick={() => setExpandedNode(expandedNode === node.name ? null : node.name)} className="p-2 hover:bg-gray-200 rounded">
+                  {expandedNode === node.name ? <ChevronUp /> : <ChevronDown />}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
