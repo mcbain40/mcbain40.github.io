@@ -250,7 +250,7 @@ const FFXIVTimer = () => {
             <option value="Stormblood">Stormblood</option>
             <option value="Shadowbringers">Shadowbringers</option>
             <option value="Endwalker">Endwalker</option>
-      <option value="Endwalker">Dawntrail</option>
+            <option value="Dawntrail">Dawntrail</option>
           </select>
         </div>
       </div>
