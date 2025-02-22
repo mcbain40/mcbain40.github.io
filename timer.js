@@ -118,7 +118,7 @@ const FFXIVTimer = () => {
         level: 100,
         patch: "7.0",
         folklore: true
-      },
+      }
   ];
 
   // Function to convert Earth time to Eorzean time
