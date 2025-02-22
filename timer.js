@@ -1,292 +1,70 @@
-// FFXIV Gathering Timer Component
-const FFXIVTimer = () => {
-  const [currentEorzeanTime, setCurrentEorzeanTime] = React.useState('00:00');
-  const [nextNodes, setNextNodes] = React.useState([]);
-  const [favorites, setFavorites] = React.useState([]);
-  const [filterType, setFilterType] = React.useState('all');
-  const [filterExpansion, setFilterExpansion] = React.useState('all');
-  const [expandedNode, setExpandedNode] = React.useState(null);
-
-  // Sample node data
-  const gatheringNodes = {
+const gatheringNodes = {
   dawntrail: {
     botany: [
-      {
-        name: "Ipe Log",
-        location: "Kozama'uka (x7, y33)",
-        aetheryte: "Earthenshire",
-        type: "Botany",
-        expansion: "Dawntrail",
-        start: 12,
-        duration: 2,
-        interval: 12,
-        level: 100,
-        patch: "7.0",
-        folklore: true
-      },
-      {
-        name: "Nopaliflower",
-        location: "Shaaloni (x10, y31)",
-        aetheryte: "Sheshenewezi Springs",
-        type: "Botany",
-        expansion: "Dawntrail",
-        start: 2,
-        duration: 2,
-        interval: 12,
-        level: 100,
-        patch: "7.0",
-        folklore: true
-      },
-      {
-        name: "Blackseed Cotton Boll",
-        location: "Living Memory (x28, y17)",
-        aetheryte: "Leynode Pyro",
-        type: "Botany",
-        expansion: "Dawntrail",
-        start: 4,
-        duration: 2,
-        interval: 12,
-        level: 100,
-        patch: "7.0",
-        folklore: true
-      },
-      {
-        name: "Optical Fiberglass",
-        location: "Living Memory (x28, y17)",
-        aetheryte: "Leynode Pyro",
-        type: "Botany",
-        expansion: "Dawntrail",
-        start: 4,
-        duration: 2,
-        interval: 12,
-        level: 100,
-        patch: "7.0",
-        folklore: true
-      }
+      { name: "Ipe Log", location: "Kozama'uka (x7, y33)", aetheryte: "Earthenshire", start: 12, duration: 2 },
+      { name: "Nopaliflower", location: "Shaaloni (x10, y31)", aetheryte: "Sheshenewezi Springs", start: 2, duration: 2 },
+      { name: "Blackseed Cotton Boll", location: "Living Memory (x28, y17)", aetheryte: "Leynode Pyro", start: 4, duration: 2 },
+      { name: "Optical Fiberglass", location: "Living Memory (x28, y17)", aetheryte: "Leynode Pyro", start: 4, duration: 2 }
     ],
     mining: [
-      {
-        name: "Turali Alumen",
-        location: "Urqopacha (x37, y29)",
-        aetheryte: "Worlar's Echo",
-        type: "Mining",
-        expansion: "Dawntrail",
-        start: 8,
-        duration: 2,
-        interval: 12,
-        level: 100,
-        patch: "7.0",
-        folklore: true
-      },
-      {
-        name: "Fine Silver Ore",
-        location: "Shaaloni (x36, y28)",
-        aetheryte: "Hhusatawhi",
-        type: "Mining",
-        expansion: "Dawntrail",
-        start: 10,
-        duration: 2,
-        interval: 12,
-        level: 100,
-        patch: "7.0",
-        folklore: true
-      },
-      {
-        name: "Alexandrian Ore",
-        location: "Living Memory (x9, y15)",
-        aetheryte: "Leynode Aero",
-        type: "Mining",
-        expansion: "Dawntrail",
-        start: 6,
-        duration: 2,
-        interval: 12,
-        level: 100,
-        patch: "7.0",
-        folklore: true
-      },
-      {
-        name: "Harmonite Ore",
-        location: "Living Memory (x9, y15)",
-        aetheryte: "Leynode Aero",
-        type: "Mining",
-        expansion: "Dawntrail",
-        start: 6,
-        duration: 2,
-        interval: 12,
-        level: 100,
-        patch: "7.0",
-        folklore: true
-      }
+      { name: "Turali Alumen", location: "Urqopacha (x37, y29)", aetheryte: "Worlar's Echo", start: 8, duration: 2 },
+      { name: "Fine Silver Ore", location: "Shaaloni (x36, y28)", aetheryte: "Hhusatawhi", start: 10, duration: 2 },
+      { name: "Alexandrian Ore", location: "Living Memory (x9, y15)", aetheryte: "Leynode Aero", start: 6, duration: 2 },
+      { name: "Harmonite Ore", location: "Living Memory (x9, y15)", aetheryte: "Leynode Aero", start: 6, duration: 2 }
     ]
   }
 };
 
-  // Convert Earth time to Eorzean time
-  const getEorzeanTime = () => {
-    const EORZEA_MULTIPLIER = 3600 / 175;
-    const now = new Date();
-    const eorzeaTime = now.getTime() * EORZEA_MULTIPLIER;
-    return new Date(eorzeaTime);
-  };
+// Function to get Eorzea Time
+function getEorzeaTime() {
+    let now = new Date();
+    let eorzeaHours = (now.getUTCHours() * 2 + Math.floor(now.getUTCMinutes() / 30)) % 24;
+    let eorzeaMinutes = (now.getUTCMinutes() * 2) % 60;
+    return { hours: eorzeaHours, minutes: eorzeaMinutes };
+}
 
-  // Format Eorzean time as HH:mm
-  const formatEorzeanTime = (date) => {
-    const hours = date.getUTCHours().toString().padStart(2, '0');
-    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes}`;
-  };
+// Function to check active nodes
+function getActiveNodes() {
+    let { hours } = getEorzeaTime();
+    let activeNodes = [];
 
-  // Calculate time until next spawn
-  const calculateNextSpawn = (node) => {
-    const eorzeaDate = getEorzeanTime();
-    const eorzeaHour = eorzeaDate.getUTCHours();
-    
-    let hoursUntilSpawn = node.start - eorzeaHour;
-    if (hoursUntilSpawn <= 0) {
-      hoursUntilSpawn += node.interval;
-    }
-    
-    return hoursUntilSpawn;
-  };
+    Object.values(gatheringNodes.dawntrail).forEach(nodes => {
+        nodes.forEach(node => {
+            let endTime = (node.start + node.duration) % 24;
+            if ((hours >= node.start && hours < endTime) || (endTime < node.start && (hours >= node.start || hours < endTime))) {
+                activeNodes.push(node);
+            }
+        });
+    });
 
-  // Toggle favorite status
-  const toggleFavorite = (nodeName) => {
-    const newFavorites = favorites.includes(nodeName)
-      ? favorites.filter(f => f !== nodeName)
-      : [...favorites, nodeName];
-    setFavorites(newFavorites);
-    localStorage.setItem('ffxiv-favorites', JSON.stringify(newFavorites));
-  };
+    return activeNodes;
+}
 
-  // Load favorites on mount
-  React.useEffect(() => {
-    const savedFavorites = localStorage.getItem('ffxiv-favorites');
-    if (savedFavorites) {
-      setFavorites(JSON.parse(savedFavorites));
-    }
-  }, []);
+// Function to update the tracker display
+function updateTracker() {
+    let { hours, minutes } = getEorzeaTime();
+    let trackerDiv = document.getElementById("tracker");
+    let activeNodes = getActiveNodes();
 
-  // Update timer and nodes
-  React.useEffect(() => {
-    const updateTimer = () => {
-      const eorzeaDate = getEorzeanTime();
-      setCurrentEorzeanTime(formatEorzeanTime(eorzeaDate));
+    trackerDiv.innerHTML = `<h2>Current Eorzea Time: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}</h2>`;
 
-      let upcoming = nodes
-        .filter(node => 
-          (filterType === 'all' || node.type === filterType) &&
-          (filterExpansion === 'all' || node.expansion === filterExpansion)
-        )
-        .map(node => ({
-          ...node,
-          nextSpawn: calculateNextSpawn(node)
-        }));
-
-      // Sort by favorites first, then spawn time
-      upcoming.sort((a, b) => {
-        const aFav = favorites.includes(a.name);
-        const bFav = favorites.includes(b.name);
-        if (aFav !== bFav) return bFav ? 1 : -1;
-        return a.nextSpawn - b.nextSpawn;
-      });
-
-      setNextNodes(upcoming);
-    };
-
-    updateTimer();
-    const timer = setInterval(updateTimer, 1000);
-    return () => clearInterval(timer);
-  }, [filterType, filterExpansion, favorites]);
-
-  return (
-    <div className="card">
-      <div className="card-header">
-        <h2 className="flex items-center gap-2 text-xl font-bold">
-          <span className="h-6 w-6">⏰</span>
-          Current Eorzean Time: {currentEorzeanTime}
-        </h2>
-        <div className="flex gap-4 mt-4">
-          <select 
-            className="ffxiv-select"
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-          >
-            <option value="all">All Types</option>
-            <option value="Mining">Mining</option>
-            <option value="Botany">Botany</option>
-            <option value="Fishing">Fishing</option>
-          </select>
-          <select
-            className="ffxiv-select"
-            value={filterExpansion}
-            onChange={(e) => setFilterExpansion(e.target.value)}
-          >
-            <option value="all">All Expansions</option>
-            <option value="A Realm Reborn">A Realm Reborn</option>
-            <option value="Heavensward">Heavensward</option>
-            <option value="Stormblood">Stormblood</option>
-            <option value="Shadowbringers">Shadowbringers</option>
-            <option value="Endwalker">Endwalker</option>
-          </select>
-        </div>
-      </div>
-      <div className="card-content">
-        <div className="space-y-4">
-          {nextNodes.map((node, index) => (
-            <div 
-              key={index} 
-              className={`node-item ${favorites.includes(node.name) ? 'favorite' : ''}`}
-            >
-              <div className="flex items-start justify-between p-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-medium">{node.name}</h3>
-                    <button
-                      onClick={() => toggleFavorite(node.name)}
-                      className="favorite-heart"
-                    >
-                      <span role="img" aria-label="heart">
-                        {favorites.includes(node.name) ? '❤️' : '🤍'}
-                      </span>
-                    </button>
-                    <span className="expansion-badge">{node.expansion}</span>
-                  </div>
-                  <p className="text-sm text-gray-600">{node.location}</p>
-                  <p className="text-sm text-gray-600">Level {node.level} {node.type}</p>
-                  <div className="mt-2">
-                    <span className="timer-badge">
-                      Next spawn in: {Math.floor(node.nextSpawn)}h {Math.floor((node.nextSpawn % 1) * 60)}m
-                    </span>
-                  </div>
+    if (activeNodes.length === 0) {
+        trackerDiv.innerHTML += `<p>No nodes are active right now.</p>`;
+    } else {
+        activeNodes.forEach(node => {
+            trackerDiv.innerHTML += `
+                <div class="node">
+                    <h3>${node.name}</h3>
+                    <p><strong>Location:</strong> ${node.location}</p>
+                    <p><strong>Aetheryte:</strong> ${node.aetheryte}</p>
+                    <p><strong>Active from:</strong> ${node.start}:00 - ${(node.start + node.duration) % 24}:00 ET</p>
                 </div>
-                <button
-                  onClick={() => setExpandedNode(expandedNode === node.name ? null : node.name)}
-                  className="p-2 hover:bg-gray-200 rounded"
-                >
-                  {expandedNode === node.name ? '▼' : '▶'}
-                </button>
-              </div>
-              
-              {expandedNode === node.name && (
-                <div className="mt-4 p-4 border-t border-gray-200">
-                  <p className="text-sm">Expansion: {node.expansion}</p>
-                  <p className="text-sm">Patch: {node.patch}</p>
-                  <p className="text-sm">Window Duration: {node.duration} hours</p>
-                  {node.weather && (
-                    <p className="text-sm">Weather Conditions: {node.weather.join(", ")}</p>
-                  )}
-                  {node.bait && (
-                    <p className="text-sm">Recommended Bait: {node.bait}</p>
-                  )}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-};
+            `;
+        });
+    }
+}
 
-// This line is important for the component to be accessible
-window.FFXIVTimer = FFXIVTimer;
+// Update every 10 seconds
+setInterval(updateTracker, 10000);
+updateTracker();
+
