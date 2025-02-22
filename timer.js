@@ -8,34 +8,118 @@ const FFXIVTimer = () => {
   const [expandedNode, setExpandedNode] = React.useState(null);
 
   // Sample node data
-  const nodes = [
-    {
-      name: "Raw Ruby",
-      location: "Coerthas Western Highlands (x13,y15)",
-      type: "Mining",
-      expansion: "Heavensward",
-      start: 2,
-      duration: 2,
-      interval: 12,
-      level: 60,
-      weather: null,
-      patch: "3.0"
-    },
-    {
-      name: "Sculptor",
-      location: "The Ruby Sea",
-      type: "Fishing",
-      expansion: "Stormblood",
-      start: 10,
-      duration: 3,
-      interval: 24,
-      level: 70,
-      weather: ["Clear Skies", "Fair Skies"],
-      bait: "Plump Worm",
-      patch: "4.0"
-      
-    }
-  ];
+  const gatheringNodes = {
+  dawntrail: {
+    botany: [
+      {
+        name: "Ipe Log",
+        location: "Kozama'uka (x7, y33)",
+        aetheryte: "Earthenshire",
+        type: "Botany",
+        expansion: "Dawntrail",
+        start: 12,
+        duration: 2,
+        interval: 12,
+        level: 100,
+        patch: "7.0",
+        folklore: true
+      },
+      {
+        name: "Nopaliflower",
+        location: "Shaaloni (x10, y31)",
+        aetheryte: "Sheshenewezi Springs",
+        type: "Botany",
+        expansion: "Dawntrail",
+        start: 2,
+        duration: 2,
+        interval: 12,
+        level: 100,
+        patch: "7.0",
+        folklore: true
+      },
+      {
+        name: "Blackseed Cotton Boll",
+        location: "Living Memory (x28, y17)",
+        aetheryte: "Leynode Pyro",
+        type: "Botany",
+        expansion: "Dawntrail",
+        start: 4,
+        duration: 2,
+        interval: 12,
+        level: 100,
+        patch: "7.0",
+        folklore: true
+      },
+      {
+        name: "Optical Fiberglass",
+        location: "Living Memory (x28, y17)",
+        aetheryte: "Leynode Pyro",
+        type: "Botany",
+        expansion: "Dawntrail",
+        start: 4,
+        duration: 2,
+        interval: 12,
+        level: 100,
+        patch: "7.0",
+        folklore: true
+      }
+    ],
+    mining: [
+      {
+        name: "Turali Alumen",
+        location: "Urqopacha (x37, y29)",
+        aetheryte: "Worlar's Echo",
+        type: "Mining",
+        expansion: "Dawntrail",
+        start: 8,
+        duration: 2,
+        interval: 12,
+        level: 100,
+        patch: "7.0",
+        folklore: true
+      },
+      {
+        name: "Fine Silver Ore",
+        location: "Shaaloni (x36, y28)",
+        aetheryte: "Hhusatawhi",
+        type: "Mining",
+        expansion: "Dawntrail",
+        start: 10,
+        duration: 2,
+        interval: 12,
+        level: 100,
+        patch: "7.0",
+        folklore: true
+      },
+      {
+        name: "Alexandrian Ore",
+        location: "Living Memory (x9, y15)",
+        aetheryte: "Leynode Aero",
+        type: "Mining",
+        expansion: "Dawntrail",
+        start: 6,
+        duration: 2,
+        interval: 12,
+        level: 100,
+        patch: "7.0",
+        folklore: true
+      },
+      {
+        name: "Harmonite Ore",
+        location: "Living Memory (x9, y15)",
+        aetheryte: "Leynode Aero",
+        type: "Mining",
+        expansion: "Dawntrail",
+        start: 6,
+        duration: 2,
+        interval: 12,
+        level: 100,
+        patch: "7.0",
+        folklore: true
+      }
+    ]
+  }
+};
 
   // Convert Earth time to Eorzean time
   const getEorzeanTime = () => {
