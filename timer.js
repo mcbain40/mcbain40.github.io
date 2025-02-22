@@ -11,7 +11,7 @@ const FFXIVTimer = () => {
   const [expandedNode, setExpandedNode] = useState(null);
 
   // Updated node data structure
-  const nodes = [
+  export const nodes = [
     botany: [
       {
         name: "Ipe Log",
