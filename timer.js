@@ -1,8 +1,16 @@
-// Eorzea Time Calculator
+// Function to calculate Eorzea Time (ET) in real-time
 function getEorzeaTime() {
     const earthTime = new Date();
     const eorzeaTime = new Date(earthTime.getTime() * 3600 / 175);
-    return eorzeaTime.getUTCHours();
+    
+    let hours = eorzeaTime.getUTCHours();
+    let minutes = eorzeaTime.getUTCMinutes();
+    
+    // Convert to 12-hour format
+    let period = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12 || 12; // Convert 0 to 12 for AM/PM format
+
+    return { hours, minutes, period };
 }
 
 // Gathering Nodes Database
@@ -26,35 +34,43 @@ const gatheringNodes = {
 // Function to check active nodes
 function getActiveNodes(currentET) {
     let activeNodes = [];
-
+    
     Object.keys(gatheringNodes.dawntrail).forEach((type) => {
         gatheringNodes.dawntrail[type].forEach((node) => {
-            if ((currentET >= node.start && currentET < node.start + node.duration) ||
-                (node.start + node.duration > 24 && currentET < (node.start + node.duration) % 24)) {
-                activeNodes.push(node);
-            }
+            let nodeEnd = node.start + node.duration;
+            let isActive = 
+                (currentET >= node.start && currentET < nodeEnd) || 
+                (nodeEnd > 24 && currentET < nodeEnd % 24);
+            
+            if (isActive) activeNodes.push(node);
         });
     });
 
     return activeNodes;
 }
 
-// Update the UI
+// Update the UI in real-time
 function updateTracker() {
-    const currentET = getEorzeaTime();
+    const { hours, minutes, period } = getEorzeaTime();
+    const currentET = getEorzeaTime().hours + (getEorzeaTime().period === "PM" ? 12 : 0);
     const activeNodes = getActiveNodes(currentET);
     const trackerDiv = document.getElementById("tracker");
 
-    trackerDiv.innerHTML = `<h2>Current Eorzea Time: ${currentET}:00</h2>`;
+    trackerDiv.innerHTML = `<h2>Current Eorzea Time: ${hours}:${minutes.toString().padStart(2, '0')} ${period}</h2>`;
 
     if (activeNodes.length > 0) {
         activeNodes.forEach(node => {
+            let startTime = node.start % 12 || 12;
+            let startPeriod = node.start >= 12 ? "PM" : "AM";
+            let endTime = (node.start + node.duration) % 12 || 12;
+            let endPeriod = (node.start + node.duration) >= 12 ? "PM" : "AM";
+
             trackerDiv.innerHTML += `
                 <div class="node">
                     <h3>${node.name}</h3>
                     <p>Location: ${node.location}</p>
                     <p>Aetheryte: ${node.aetheryte}</p>
-                    <p>Active from ${node.start}:00 - ${node.start + node.duration}:00 ET</p>
+                    <p>Active from ${startTime}:00 ${startPeriod} - ${endTime}:00 ${endPeriod} ET</p>
                 </div>
             `;
         });
@@ -63,7 +79,7 @@ function updateTracker() {
     }
 }
 
-// Refresh every 10 seconds
-setInterval(updateTracker, 10000);
+// Refresh every second for real-time updates
+setInterval(updateTracker, 1000);
 updateTracker();
 
