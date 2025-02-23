@@ -1,24 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+  <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FFXIV Gathering Timer</title>
-    
-    <!-- React and ReactDOM -->
-    <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
-    
-    <!-- Babel for JSX -->
-    <script>
-  var exports = {};
-</script>
-<script src="path/to/your/script.js"></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
-    
-    <!-- Lucide Icons -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.js"></script>
+    <title>FFXIV Gathering Tracker</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
     
     <!-- Tailwind CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
@@ -97,14 +85,9 @@
     </style>
 </head>
 <body>
-    <div id="ffxiv-timer"></div>
-    
-    <!-- Load and initialize the timer component -->
-    <script type="text/babel" src="timer.js"></script>
-    <script type="text/babel">
-        ReactDOM.render(
-            React.createElement(FFXIVTimer),
-            document.getElementById('ffxiv-timer')
+   <div id="root"></div>
+
+    <script src="app.js"></script>
         );
     </script>
 </body>
