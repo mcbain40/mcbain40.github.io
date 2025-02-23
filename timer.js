@@ -1,14 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, Heart, Filter, ChevronDown, ChevronUp } from 'lucide-react';
 
-const FFXIVTimer = () => {
-  // Initialize all state variables
-  const [currentEorzeanTime, setCurrentEorzeanTime] = useState('00:00');
-  const [nextNodes, setNextNodes] = useState([]);
-  const [favorites, setFavorites] = useState([]);
-  const [filterType, setFilterType] = useState('all');
-  const [filterExpansion, setFilterExpansion] = useState('all');
-  const [expandedNode, setExpandedNode] = useState(null);
+
 
   // Updated node data structure
   export const nodes = [
@@ -122,6 +115,15 @@ const FFXIVTimer = () => {
     ]
   ];
 
+const FFXIVTimer = () => {
+  // Initialize all state variables
+  const [currentEorzeanTime, setCurrentEorzeanTime] = useState('00:00');
+  const [nextNodes, setNextNodes] = useState([]);
+  const [favorites, setFavorites] = useState([]);
+  const [filterType, setFilterType] = useState('all');
+  const [filterExpansion, setFilterExpansion] = useState('all');
+  const [expandedNode, setExpandedNode] = useState(null);
+  
   // Function to convert Earth time to Eorzean time
   const getEorzeanTime = () => {
     const EORZEA_MULTIPLIER = 3600 / 175;
